@@ -2,11 +2,23 @@ const express = require('express');
 const route = express.Router();
 const Product = require('../models/product');
 const mongoose = require('mongoose');
+const multer = require('multer');
 
+const storage = multer.diskStorage({
+    destination:function(req,file, clb){
+        clb(null,'upload/');
+    },
+    filename: function(req, file, clb){
+        clb(null,new Date().toString()+ file.originalname);
+    }
+});
+const upload = multer({storage:storage,limits:{
+    fileSize:(1024 * 1024)*2,
+}});
 
 route.get('/',(req, res, next)=>{
     Product.find()
-    .select('_id name price')
+    .select('_id name price image')
     .exec()
     .then(docs => {
         var result = {
@@ -16,6 +28,7 @@ route.get('/',(req, res, next)=>{
                     _id:doc._id,
                     name:doc.name,
                     price:doc.price,
+                    image:doc.image,
                     info:{
                         type:'Get',
                         url:'localhost:3000/product/'+doc._id,
@@ -71,12 +84,13 @@ route.delete('/:productID',(req, res, next)=>{
      })
 });
 
-
-route.post('/',function(req, res, next){
+route.post('/',upload.single('image'),function(req, res, next){
+    console.log(req.file)
     const pro = new Product({
         _id: mongoose.Types.ObjectId(),
         name: req.body.name,
-        price: req.body.price
+        price: req.body.price,
+        image: req.file.path,
     });
     pro.save()
     .then(result => {
@@ -90,13 +104,12 @@ route.post('/',function(req, res, next){
              console.log(err);
              res.status(500).json({error:err}); 
         });
-
 });
 
 route.get('/:productID',(req, res, next)=>{
     var id = req.params.productID;
     Product.findById(id)
-    .select('_id name price')
+    .select('_id name price image')
     .exec()
     .then(doc =>{
         var result = {
@@ -104,6 +117,7 @@ route.get('/:productID',(req, res, next)=>{
                 _id:doc.id,
                 name:doc.name,
                 price:doc.price,
+                image:doc.image,
                 info:{
                     type:'Get',
                     url:'/product/'+doc.id,
@@ -121,6 +135,5 @@ route.get('/:productID',(req, res, next)=>{
         });
     })
 })
-
 
 module.exports =route;
