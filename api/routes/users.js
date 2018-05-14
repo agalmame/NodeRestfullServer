@@ -10,17 +10,16 @@ router.post('/signup',(req, res, next)=>{
     User.find({email:req.body.email})
     .exec()
     .then(result=>{
-        if(result!=""){
-            console.log("this is "+result)
+        if(result.length > 0){
             return res.status(409).json({
-                message:'mail exists'
+                    message:'mail exists'
             })
         }else{
-            bcrypt.hash(req.body.password,5,(err,hash)=>{
+            bcrypt.hash(req.body.password,7,function(err, hash){
+                console.log(err)
                 if(err){
-                    console.log('hash problem')
                     return res.status(500).json({
-                        error:err
+                            message:'hash problem'
                     })
                 }else{
                     const user = new User({
@@ -80,7 +79,7 @@ router.delete('/:userID',checkAuth,(req, res, next)=>{
         });
     })
 })
-router.post('/login',checkAuth,(req , res, next)=>{
+router.post('/login',(req , res, next)=>{
     User.find({email:req.body.email})
     .exec()
     .then(user=>{

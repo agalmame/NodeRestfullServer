@@ -60,6 +60,7 @@ route.patch('/:productID',checkAuth,(req, res, next) => {
             info:{
                 type:'patch',
                 url:'/product/'+id,
+                message:req.userData
             }
     })})
     .catch(err => {

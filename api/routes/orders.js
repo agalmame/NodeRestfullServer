@@ -58,11 +58,6 @@ route.post('/',checkAuth,(req, res, next)=>{
         })
     })
 
-    
-    // .catch(err=> {
-    //     res.status(500).json({error:err});
-    // });
-
 route.get('/:orderID',function(req, res, next){
     var id = req.params.orderID;
     Order.findOne({_id:id})
